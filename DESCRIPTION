@@ -1,0 +1,12 @@
+Package: OIB
+Title: Ocean Intelligence Bureau Toolbox
+Version: 0.0.0.9000
+Authors@R: person("Francesco", "Ferretti", email = "ferretti@stanford.edu", role = c("aut", "cre"))
+Author: Francesco Ferretti
+Maintainer: Francesco Ferretti
+Description: R utilities to detect illegal fishing operations through the OIB's data integrated platform. 
+Depends: R (>= 3.3.1)
+License: Academic Free License (“AFL”) v. 3.0
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1

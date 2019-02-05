@@ -100,8 +100,9 @@ out
 
 mapInteraction = function(out){
 	require(dplyr)
+	fpath <- system.file("ferry-18.png", package="OIB")
 	oceanIcons <- leaflet::iconList(
-  		ship = leaflet::makeIcon("../images/ferry-18.png", "ferry-18@2x.png", 24, 24),
+  		ship = leaflet::makeIcon(fpath, "ferry-18@2x.png", 24, 24),
   		pirate = leaflet::makeIcon("danger-24.png", "danger-24@2x.png", 24, 24)
 	)
 	# extract data from out

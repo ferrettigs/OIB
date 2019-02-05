@@ -26,7 +26,9 @@ dat = getDrift(con,ptt)
 
 #-------------------------------------------------------------------------
 
-locErr = read.csv("../data/locationErr.csv") # location error ranges
+#locErr = read.csv("../data/locationErr.csv") # location error ranges
+locErr = locationErr # location error ranges - this is an internal dataset
+
 dat = merge(dat, locErr, by.x = "lc", by.y = "Location.class", all.x =TRUE)
 popdat = dat[dat$datetime==min(dat$datetime),] # popup row - so date
 
@@ -109,59 +111,71 @@ mapInteraction = function(out){
 	# remove inaccurate locations
 	drfdat = drfdat[!is.na(drfdat$Location.error),] # it means excluding classes A, B and Z. http://www.argos-system.org/manual/3-location/34_location_classes.htm 
 	drfdat = drfdat[order(drfdat$datetime),]
-	locs$file <- paste('http://baseline3.stanford.edu/pbImageRec/code/',locs$mmsi,'.jpg',sep = "")
-
-	binpal = colorBin(palette="Blues", domain = locs$mmsi, bins = length(unique(locs$mmsi)))
-	m <-leaflet::leaflet() %>%
-  		leaflet::addTiles()  # Add default OpenStreetMap map tiles
-  	
-  	for(group in levels(as.factor(locs$mmsi))){
- 				m = addPolylines(m, 
-                      lng= ~lon,
-                      lat= ~lat,
-                      data = locs[locs$mmsi == group,], 
-                      color= ~ binpal(mmsi),
-                      weight = 3)
-	}
-  	  
-	locs2 = locs %>% 
-    group_by(mmsi) %>% 
-    slice(which.max(timestamp))
-    locs2 = as.data.frame(locs2)
-    locs2 = unique(merge(locs2,ships[,c("mmsi","shipname","inferred_label","known_geartype")], by = "mmsi", all.x = T)) # not sure why I need to unique
-
-	addMarkers(m, lng=~lon, lat=~lat, data = locs2, popup=paste(
-	"MMSI:", as.character(locs2$mmsi),"<br>",
-	"Timestamp:",as.character(locs2$timestamp),"<br>",
-	"Ship name:", as.character(locs2$shipname),"<br>", 
-	"Inferred label:", as.character(locs2$inferred_label),"<br>",
-	"Known gear type:", as.character(locs2$known_geartype),"<br>",
-	paste0("<img src = ", locs2$file, " width=150>"), sep = " "), 
-	icon = oceanIcons["ship"])  %>%
 	
-  	addAwesomeMarkers(lng = ~lon, 
-  					lat = ~lat, 
-  					data = popdat, 
-  					icon = leaflet::awesomeIcons(icon = 'ion-ionic', library = 'ion', markerColor = 'red'), 
-  					label = as.character(popdat$datetime)) %>%
-  	addCircles(lng=~lon, # for popup marker
+	
+	m <-leaflet::leaflet() %>%
+  			leaflet::addTiles()  # Add default OpenStreetMap map tiles
+	
+	if (nrow(locs)!=0){
+	
+		locs$file <- paste('http://baseline3.stanford.edu/pbImageRec/code/',locs$mmsi,'.jpg',sep = "") # gets images of the boat
+
+		binpal = colorBin(palette="Blues", domain = locs$mmsi, bins = length(unique(locs$mmsi))+1) # creates a palette for different boats
+							# +1 is necessary to avoid problems when there is only a boat
+		
+  	
+		for(group in levels(as.factor(locs$mmsi))){
+					m = addPolylines(m, 
+						  lng= ~lon,
+						  lat= ~lat,
+						  data = locs[locs$mmsi == group,], 
+						  color= ~ binpal(mmsi),
+						  weight = 3)
+		} # adds a track for each boat
+	
+	  	  
+		locs2 = locs %>% 
+    	group_by(mmsi) %>% 
+    	slice(which.max(timestamp))
+    	locs2 = as.data.frame(locs2)
+    	locs2 = unique(merge(locs2,ships[,c("mmsi","shipname","inferred_label","known_geartype")], by = "mmsi", all.x = T)) # not sure why I need to unique
+
+		m = addMarkers(m, lng=~lon, lat=~lat, data = locs2, popup=paste(
+		"MMSI:", as.character(locs2$mmsi),"<br>",
+		"Timestamp:",as.character(locs2$timestamp),"<br>",
+		"Ship name:", as.character(locs2$shipname),"<br>", 
+		"Inferred label:", as.character(locs2$inferred_label),"<br>",
+		"Known gear type:", as.character(locs2$known_geartype),"<br>",
+		paste0("<img src = ", locs2$file, " width=150>"), sep = " "), 
+		icon = oceanIcons["ship"])
+	}
+  	m = addAwesomeMarkers(m, lng = ~lon, 
+  						lat = ~lat, 
+  						data = popdat, 
+  						icon = leaflet::awesomeIcons(icon = 'ion-ionic', library = 'ion', markerColor = 'red'), 
+  						label = as.character(popdat$datetime))
+  						
+  	m = addCircles(m, lng=~lon, # for popup marker
   				lat=~lat, 
   				data = popdat, 
   				radius = ~Location.error, 
-  				color = "red") %>%
-  	addCircleMarkers(lng=~lon, # for boat locations
-  					lat=~lat, 
-  					data = locs, 
-  					popup=as.character(locs$timestamp), 
-  					radius = 3, 
-  					color = ~ binpal(mmsi)) %>%
-  	addCircleMarkers(lng=~lon, # for tag locations
+  				color = "red")
+  	if (nrow(locs)!=0){			
+		m = addCircleMarkers(m, lng=~lon, # for boat locations
+						lat=~lat, 
+						data = locs, 
+						popup=as.character(locs$timestamp), 
+						radius = 3, 
+						color = ~ binpal(mmsi))
+  	}				
+  	m = addCircleMarkers(m, lng=~lon, # for tag locations
   					lat=~lat, 
   					data = drfdat, 
   					popup=as.character(drfdat$datetime), 
   					radius = 2, 
-  					color = "red") %>%
-  	addPolylines(lng= ~lon, # for tag locations
+  					color = "red")
+  					
+  	m = addPolylines(m, lng= ~lon, # for tag locations
                  lat= ~lat,
                  data = drfdat, 
                  color= "red",
@@ -169,7 +183,7 @@ mapInteraction = function(out){
                  #%>%
     #addRectangles(lng1=min(c(popdat$lon,drfdat$lon)), lat1=min(c(popdat$lat,drfdat$lat)),
     #lng2=max(c(popdat$lon,drfdat$lon)), lat2=max(c(popdat$lat,drfdat$lat)))             
-  		
+  	m
 
 }  
   

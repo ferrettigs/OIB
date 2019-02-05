@@ -14,3 +14,26 @@ getSpeed = function(dat, track = "PAT"){
 	dat$speed = with(dat, reldist/reltime)
 	dat
 }
+
+
+
+getClosestPosition = function(out){
+
+dm = geosphere::distm(out$drfdat[,c("lon","lat")], out$locs[,c("lon","lat")])/1000
+# matrix of distances in km
+
+tm = outer(out$drfdat[,"datetime"], out$locs[,"timestamp"], "-")
+# matrix of differences in time in days
+# now I can try to find the euclidean distance
+edist = dist(cbind(as.vector(dm), as.vector(tm))) # but it sucks all the memory
+
+library(pdist)
+dists <- pdist(out$drfdat[,c("lon","lat","datetime")], out$locs[,c("lon","lat", "timestamp")])
+edist = as.matrix(dists)
+which(edist == min(edist), arr.ind = TRUE)
+
+out$drfdat[19,]
+out$locs[14725,]
+
+
+}

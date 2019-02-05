@@ -30,7 +30,8 @@ dat = getDrift(con,ptt)
 locErr = locationErr # location error ranges - this is an internal dataset
 
 dat = merge(dat, locErr, by.x = "lc", by.y = "Location.class", all.x =TRUE)
-popdat = dat[dat$datetime==min(dat$datetime),] # popup row - so date
+popdat = dat[dat$datetime==max(dat$datetime),] # popup row - so date
+# I am going to change this line to allow the search for the last pinging location
 
 
 mindate = popdat$date-as.difftime(paste(tempWin/2,":00:00",sep=""))

@@ -99,12 +99,16 @@ out
 #' @export 
 
 mapInteraction = function(out){
-	require(dplyr)
+	#require(dplyr)
 	fpath <- system.file("ferry-18.png", package="OIB")
 	oceanIcons <- leaflet::iconList(
   		ship = leaflet::makeIcon(fpath, "ferry-18@2x.png", 24, 24),
   		pirate = leaflet::makeIcon("danger-24.png", "danger-24@2x.png", 24, 24)
 	)
+	# the above option will not work for a remote shiny app
+	
+	
+	
 	# extract data from out
 	locs = out$locs # locations of boats
 	popdat = out$popdat # popup location
@@ -113,7 +117,6 @@ mapInteraction = function(out){
 	# remove inaccurate locations
 	drfdat = drfdat[!is.na(drfdat$Location.error),] # it means excluding classes A, B and Z. http://www.argos-system.org/manual/3-location/34_location_classes.htm 
 	drfdat = drfdat[order(drfdat$datetime),]
-	
 	
 	m <-leaflet::leaflet() %>%
   			leaflet::addTiles()  # Add default OpenStreetMap map tiles
@@ -182,6 +185,21 @@ mapInteraction = function(out){
                  data = drfdat, 
                  color= "red",
                  weight = 2) 
+     
+    # get distance for the closest distance   
+    if (nrow(locs)!=0){          
+		segment = getClosestPosition(out) # closest points between tag and ship trajectories - these also include the tag dimension
+		m = addPolylines(m, lng= ~lon, # for tag locations
+					 lat= ~lat,
+					 data = segment, 
+					 color= "yellow",
+					 weight = 2,
+					 dashArray = "4",
+					 popup = paste(
+							"Distance:", as.character(round(segment$distance[2],1)),"km <br>",
+							"Timelag:",as.character(round(segment$timelag[2],2)),"hours",
+							 sep = " "))  # for dashed patterns           
+	}                 
                  #%>%
     #addRectangles(lng1=min(c(popdat$lon,drfdat$lon)), lat1=min(c(popdat$lat,drfdat$lat)),
     #lng2=max(c(popdat$lon,drfdat$lon)), lat2=max(c(popdat$lat,drfdat$lat)))             

@@ -2,6 +2,7 @@
 
 export(connectOIB)
 export(getCafeTagData)
+export(getClosestPosition)
 export(getDrift)
 export(getSpeed)
 export(getVesselTracksBox)

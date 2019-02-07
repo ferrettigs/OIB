@@ -140,7 +140,7 @@ mapInteraction = function(out){
 	
 	  	  
 		locs2 = locs %>% 
-    	group_by(mmsi) %>% 
+    	dplyr::group_by(mmsi) %>% 
     	slice(which.max(timestamp))
     	locs2 = as.data.frame(locs2)
     	locs2 = unique(merge(locs2,ships[,c("mmsi","shipname","inferred_label","known_geartype")], by = "mmsi", all.x = T)) # not sure why I need to unique

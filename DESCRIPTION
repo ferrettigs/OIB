@@ -9,11 +9,12 @@ Depends: R (>= 3.3.1),
    	 RPostgreSQL,
    	 RH2,
 	 leaflet,	
-	 AIS
+	 AIS,
+	 pdist	 
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
 Imports:
-    dplyr,
-    pdist    
+    dplyr
+       

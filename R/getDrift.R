@@ -11,7 +11,7 @@ getDrift = function(con, ptt = 173165){
 
 	require(raster) 
 	dat2$lat1 = trim(dat2$lat1) # removes leading and trailing spaces
-	dat2$emi = substr(as.character(dat2$lat1),regexpr("N",dat2$lat1),regexpr("N",dat2$lat1)) # extract emisphere
+	dat2$emi = substr(as.character(dat2$lat1),regexpr("N|S",dat2$lat1),regexpr("N|S",dat2$lat1)) # extract emisphere
 	dat2 = dat2[(dat2$emi!=""),] # removes lines with  non coords
 	dat2$lat = as.numeric(sub("N|S","",dat2$lat1))
 	dat2$lat = with(dat2, ifelse(emi=="N",lat*1,lat*-1))

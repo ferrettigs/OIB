@@ -80,7 +80,7 @@ sql2 = paste("SELECT
 	known_geartype,
 	mmsi,
 	on_fishing_list_best 
-	FROM [gfw_research.vessel_info_20180726] 
+	FROM [gfw_research_archived.vessel_info_20180726] 
 	WHERE mmsi IN (",paste(mmsis, collapse = ","),")", sep = "")
 sql2 = cleanSql(sql2)	
 
